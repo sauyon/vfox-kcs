@@ -41,17 +41,18 @@ function PLUGIN:MiseEnv(ctx)
     end
 
     local session_file = xdg_runtime_dir() .. "/kcs/sessions/" .. shell_pid
-    local f = io.open(session_file, "r")
-    if not f then
-        return {}
-    end
-    f:close()
+
+    local existing_kubeconfig = os.getenv("KUBECONFIG")
+    local fallback = (existing_kubeconfig and existing_kubeconfig ~= "")
+        and existing_kubeconfig
+        or (os.getenv("HOME") .. "/.kube/config")
+    local kubeconfig = session_file .. ":" .. fallback
 
     return {
         cacheable = true,
         watch_files = { session_file },
         env = {
-            { key = "KUBECONFIG", value = session_file }
+            { key = "KUBECONFIG", value = kubeconfig }
         }
     }
 end
