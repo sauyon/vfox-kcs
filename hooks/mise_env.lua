@@ -41,9 +41,11 @@ function PLUGIN:MiseEnv(ctx)
     end
 
     local session_file = xdg_runtime_dir() .. "/kcs/sessions/" .. shell_pid
-    if not file.exists(session_file) then
+    local f = io.open(session_file, "r")
+    if not f then
         return {}
     end
+    f:close()
 
     return {
         cacheable = true,
