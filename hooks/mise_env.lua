@@ -41,14 +41,7 @@ function PLUGIN:MiseEnv(ctx)
     end
 
     local session_file = xdg_runtime_dir() .. "/kcs/sessions/" .. shell_pid
-    local f = io.open(session_file, "r")
-    if not f then
-        return {}
-    end
-    local kubeconfig = f:read("*l")
-    f:close()
-
-    if not kubeconfig or kubeconfig == "" then
+    if not file.exists(session_file) then
         return {}
     end
 
@@ -56,7 +49,7 @@ function PLUGIN:MiseEnv(ctx)
         cacheable = true,
         watch_files = { session_file },
         env = {
-            { key = "KUBECONFIG", value = kubeconfig }
+            { key = "KUBECONFIG", value = session_file }
         }
     }
 end
