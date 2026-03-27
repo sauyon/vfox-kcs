@@ -1,3 +1,5 @@
+local cmd = require("cmd")
+
 function PLUGIN:PostInstall(ctx)
     local install_path = ctx.rootPath
     local os_type = RUNTIME.osType
@@ -11,11 +13,9 @@ function PLUGIN:PostInstall(ctx)
     end
 
     local bin_name = "kcs-" .. os_type .. "-" .. arch
-    local bin_path = install_path .. "/" .. bin_name
     local bin_dir = install_path .. "/bin"
-    local target = bin_dir .. "/kcs"
 
-    cmd.exec({ "mkdir", "-p", bin_dir })
-    cmd.exec({ "mv", bin_path, target })
-    cmd.exec({ "chmod", "+x", target })
+    cmd.exec("mkdir -p " .. bin_dir)
+    cmd.exec("mv " .. install_path .. "/" .. bin_name .. " " .. bin_dir .. "/kcs")
+    cmd.exec("chmod +x " .. bin_dir .. "/kcs")
 end
