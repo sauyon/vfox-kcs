@@ -1,5 +1,5 @@
 function PLUGIN:PostInstall(ctx)
-    local install_path = ctx.installPath
+    local install_path = ctx.rootPath
     local os_type = RUNTIME.osType
     local arch_type = RUNTIME.archType
 
