@@ -11,7 +11,7 @@ function PLUGIN:PreInstall(ctx)
     end
 
     local filename = "kcs-" .. os_type .. "-" .. arch
-    local url = "https://github.com/FogDong/kcs/releases/download/v" .. version .. "/" .. filename
+    local url = "https://github.com/sauyon/kcs/releases/download/v" .. version .. "/" .. filename
 
     return {
         version = version,
