@@ -42,25 +42,30 @@ function PLUGIN:MiseEnv(ctx)
 
     local kcs_dir = xdg_runtime_dir() .. "/kcs/sessions/"
     local existing_kubeconfig = os.getenv("KUBECONFIG") or ""
+
+    -- Strip any existing kcs session path so we don't accumulate duplicates.
+    -- If KUBECONFIG already contains a kcs path, fall back to ~/.kube/config
+    -- rather than re-appending the session path on top of itself.
+    -- NOTE: do NOT return {} here — that tells mise to unset the vars it
+    -- previously exported, causing KCS_SESSION to oscillate on every hook.
+    local fallback
     if existing_kubeconfig:find(kcs_dir, 1, true) then
-        return {}
+        fallback = os.getenv("HOME") .. "/.kube/config"
+    elseif existing_kubeconfig ~= "" then
+        fallback = existing_kubeconfig
+    else
+        fallback = os.getenv("HOME") .. "/.kube/config"
     end
 
     local session_file = kcs_dir .. shell_pid
-    local fallback = existing_kubeconfig ~= ""
-        and existing_kubeconfig
-        or (os.getenv("HOME") .. "/.kube/config")
     local kubeconfig = session_file .. ":" .. fallback
 
     return {
         cacheable = true,
         watch_files = { session_file },
-        env = (function()
-            local e = { { key = "KUBECONFIG", value = kubeconfig } }
-            if not os.getenv("KCS_SESSION") then
-                table.insert(e, { key = "KCS_SESSION", value = shell_pid })
-            end
-            return e
-        end)()
+        env = {
+            { key = "KUBECONFIG",  value = kubeconfig },
+            { key = "KCS_SESSION", value = shell_pid  },
+        },
     }
 end
