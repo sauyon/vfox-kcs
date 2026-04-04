@@ -1,28 +1,6 @@
-local function get_shell_pid()
-    -- Linux: read PPid from /proc/self/status (mise runs embedded in-process,
-    -- so self is the mise process and its parent is the shell)
-    local f = io.open("/proc/self/status", "r")
-    if f then
-        for line in f:lines() do
-            local ppid = line:match("^PPid:%s+(%d+)")
-            if ppid then
-                f:close()
-                return ppid
-            end
-        end
-        f:close()
-    end
-
-    -- macOS fallback: get mise PID via $PPID of a subshell, then get its parent
-    local mise_pid = cmd.exec({ "sh", "-c", "echo $PPID" }):match("%d+")
-    if mise_pid then
-        local shell_pid = cmd.exec({ "ps", "-o", "ppid=", "-p", mise_pid }):match("%d+")
-        if shell_pid then
-            return shell_pid
-        end
-    end
-
-    return nil
+local function new_session_id()
+    math.randomseed(os.time())
+    return tostring(math.random(10000, 99999))
 end
 
 local function xdg_runtime_dir()
@@ -40,7 +18,7 @@ function PLUGIN:MiseEnv(ctx)
     -- If KCS_SESSION is already set, honour it; otherwise derive from shell PID.
     local session_id = os.getenv("KCS_SESSION")
     if not session_id or session_id == "" then
-        session_id = get_shell_pid()
+        session_id = new_session_id()
     end
     if not session_id then
         return {}
