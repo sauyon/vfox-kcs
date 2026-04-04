@@ -35,12 +35,17 @@ local function xdg_runtime_dir()
 end
 
 function PLUGIN:MiseEnv(ctx)
-    local shell_pid = get_shell_pid()
-    if not shell_pid then
+    local kcs_dir = xdg_runtime_dir() .. "/kcs/sessions/"
+
+    -- If KCS_SESSION is already set, honour it; otherwise derive from shell PID.
+    local session_id = os.getenv("KCS_SESSION")
+    if not session_id or session_id == "" then
+        session_id = get_shell_pid()
+    end
+    if not session_id then
         return {}
     end
 
-    local kcs_dir = xdg_runtime_dir() .. "/kcs/sessions/"
     local existing_kubeconfig = os.getenv("KUBECONFIG") or ""
 
     -- Strip any existing kcs session path so we don't accumulate duplicates.
@@ -57,7 +62,7 @@ function PLUGIN:MiseEnv(ctx)
         fallback = os.getenv("HOME") .. "/.kube/config"
     end
 
-    local session_file = kcs_dir .. shell_pid
+    local session_file = kcs_dir .. session_id
     local kubeconfig = session_file .. ":" .. fallback
 
     return {
@@ -65,7 +70,7 @@ function PLUGIN:MiseEnv(ctx)
         watch_files = { session_file },
         env = {
             { key = "KUBECONFIG",  value = kubeconfig },
-            { key = "KCS_SESSION", value = shell_pid  },
+            { key = "KCS_SESSION", value = session_id  },
         },
     }
 end
