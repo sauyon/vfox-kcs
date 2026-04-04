@@ -15,13 +15,10 @@ end
 function PLUGIN:MiseEnv(ctx)
     local kcs_dir = xdg_runtime_dir() .. "/kcs/sessions/"
 
-    -- If KCS_SESSION is already set, honour it; otherwise derive from shell PID.
+    -- If KCS_SESSION is already set, honour it; otherwise generate a new one.
     local session_id = os.getenv("KCS_SESSION")
     if not session_id or session_id == "" then
         session_id = new_session_id()
-    end
-    if not session_id then
-        return {}
     end
 
     local existing_kubeconfig = os.getenv("KUBECONFIG") or ""
