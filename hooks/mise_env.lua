@@ -14,6 +14,13 @@ end
 
 function PLUGIN:MiseEnv(ctx)
     local kcs_dir = xdg_runtime_dir() .. "/kcs/sessions/"
+    local kube_dir = os.getenv("HOME") .. "/.kube"
+    local kcs_config = kube_dir .. "/kcs-config"
+
+    -- Ensure the sessions directory and kcs-config symlink exist.
+    os.execute("mkdir -p " .. kcs_dir)
+    os.execute("test -e " .. kcs_config .. " -o -L " .. kcs_config ..
+        " || ln -s " .. kube_dir .. "/config " .. kcs_config)
 
     -- If KCS_SESSION is already set, honour it; otherwise generate a new one.
     local session_id = os.getenv("KCS_SESSION")
@@ -28,7 +35,6 @@ function PLUGIN:MiseEnv(ctx)
     -- rather than re-appending the session path on top of itself.
     -- NOTE: do NOT return {} here — that tells mise to unset the vars it
     -- previously exported, causing KCS_SESSION to oscillate on every hook.
-    local kcs_config = os.getenv("HOME") .. "/.kube/kcs-config"
     local fallback
     if existing_kubeconfig:find(kcs_dir, 1, true) or existing_kubeconfig:find("kcs-config", 1, true) then
         fallback = kcs_config
