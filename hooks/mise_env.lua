@@ -1,4 +1,14 @@
 local function new_session_id()
+    local f = io.open("/dev/urandom", "rb")
+    if f then
+        local bytes = f:read(4)
+        f:close()
+        local n = 0
+        for i = 1, #bytes do
+            n = n * 256 + bytes:byte(i)
+        end
+        return tostring(n % 90000 + 10000)
+    end
     math.randomseed(os.time())
     return tostring(math.random(10000, 99999))
 end
